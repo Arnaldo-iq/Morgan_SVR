@@ -5,7 +5,8 @@ from rdkit import Chem
 from rdkit.Chem.Draw import IPythonConsole
 from rdkit.Chem import PandasTools
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVR
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor, kernels
 from sklearn.model_selection import cross_val_score, cross_val_predict, cross_validate
 from sklearn import metrics
 from sklearn.metrics import explained_variance_score
@@ -69,7 +70,9 @@ morgan_matrix_feature_cross = generate_FP_matrix(smiles)
 features_cross = np.array(morgan_matrix_feature_cross)
 targets_cross = np.array(activity)
 
-regressor=SVR(kernel='rbf', C = 1, gamma='scale', epsilon = 0.2, max_iter=-1)
+kernel = kernels.ConstantKernel(2.0, (1e-1, 1e3)) * kernels.RBF(2.0, (1e-3, 1e3))
+
+regressor=GaussianProcessRegressor(kernel=kernel, optimizer = 'fmin_l_bfgs_b',alpha = 1.5, n_restarts_optimizer=5)
 #
 # Spit thre data into training and test set.
 #
@@ -114,14 +117,14 @@ x = np.arange(len(prediction))
 plt.plot( x, test_target,    marker='', color='blue', linewidth=1.0, linestyle='dashed', label="actual")
 plt.plot( x, prediction, marker='', color='red', linewidth=1.0, label='predicted')
 #
-plt.savefig('predict_morga_SVR.png', dpi=600)
+plt.savefig('predict_non_x_val.png', dpi=600)
 #
 plt.legend()
 #
 plt.show()
 #
 print('------------------------------------------------------------------------------------------')
-print('CALCULATING SIMPLE MODEL')
+print('CALCULATING NON X-VALIDATEZZ MODEL')
 print('------------------------------------------------------------------------------------------')
 #-----------------DONE---------------------------------------------------------------------------------------------------------
 # Calculating statitcs now for the one of
@@ -142,7 +145,7 @@ print ("Largest prediction error is",Ans)
 # Performing the 10-fold cross validation and leav-one-out validation 
 #------------------------------------------------------------------------------------------------------------------------------
 print('------------------------------------------------------------------------------------------')
-print('CALCULATING CROSS-VALIDATION MODEL')
+print('CALCULATING CROSS-VALIDATED MODEL')
 print('------------------------------------------------------------------------------------------')
 #------------------------------------------------------------------------------------------------------------------------------
 print ('Calculating 10-fold cross validation...')
@@ -184,7 +187,7 @@ x = np.arange(len(predictions_cv))
 plt.plot( x, train_targets,    marker='', color='blue', linewidth=1.0, linestyle='dashed', label="actual")
 plt.plot( x, predictions_cv, marker='', color='red', linewidth=1.0, label='predicted')
 #
-plt.savefig('predict.png', dpi=600)
+plt.savefig('predict_X_validated.png', dpi=600)
 #
 plt.legend()
 #
