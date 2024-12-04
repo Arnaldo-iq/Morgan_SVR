@@ -6,7 +6,7 @@ from rdkit.Chem.Draw import IPythonConsole
 from rdkit.Chem import PandasTools
 from sklearn.model_selection import train_test_split
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process import GaussianProcessRegressor, kernels
+from sklearn.gaussian_process.kernels import  Matern, WhiteKernel, ConstantKernel
 from sklearn.model_selection import cross_val_score, cross_val_predict, cross_validate
 from sklearn import metrics
 from sklearn.metrics import explained_variance_score
@@ -70,9 +70,8 @@ morgan_matrix_feature_cross = generate_FP_matrix(smiles)
 features_cross = np.array(morgan_matrix_feature_cross)
 targets_cross = np.array(activity)
 
-kernel = kernels.ConstantKernel(2.0, (1e-1, 1e3)) * kernels.RBF(2.0, (1e-3, 1e3))
-
-regressor=GaussianProcessRegressor(kernel=kernel, optimizer = 'fmin_l_bfgs_b',alpha = 1.5, n_restarts_optimizer=5)
+kernel = ConstantKernel() + Matern(length_scale=2, nu=3/2) + WhiteKernel(noise_level=1)
+regressor = GaussianProcessRegressor(kernel = kernel, alpha=1e-05, n_restarts_optimizer=0, normalize_y=False, optimizer='fmin_l_bfgs_b', random_state=None)
 #
 # Spit thre data into training and test set.
 #
